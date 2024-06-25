@@ -1,0 +1,86 @@
+import 'package:flutter/material.dart';
+
+
+class yournotes extends StatefulWidget {
+  const yournotes({Key? key}) : super(key: key);
+
+  @override
+  State<yournotes> createState() => _yournotesState();
+}
+
+class _yournotesState extends State<yournotes> {
+  Crud crudnotemath = Crud();
+
+  getnote() async {
+    var response = await crudnotemath.postRequest(linkViewNote, {
+      "id": sharepref.getString("id"),
+    });
+    return response;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(
+          "your notes",
+          style: TextStyle(
+              fontFamily: "MontserratAlternates-MediumItalic",
+              fontSize: 25,
+              color: AppColors.white),
+        ),
+        backgroundColor: AppColors.yellow,
+        centerTitle: true,
+      ),
+      body: Container(
+        padding: EdgeInsets.all(20),
+        child: ListView(
+          children: [
+            const SizedBox(
+              width: 10,
+            ),
+            FutureBuilder(
+              future: getnote(),
+              builder: (BuildContext context, AsyncSnapshot snapshot) {
+                if (snapshot.hasData) {
+                  if (snapshot.data['status'] == 'fail')
+                    return Center(
+                      child: Text(
+                        "there is no notes",
+                        style: TextStyle(
+                            fontSize: 25, fontWeight: FontWeight.bold),
+                      ),
+                    );
+                  return ListView.builder(
+                      itemCount: snapshot.data['data'].length,
+                      shrinkWrap: true,
+                      physics: NeverScrollableScrollPhysics(),
+                      itemBuilder: (context, i) {
+                        return cardnote(
+                            ontap: () {
+                              Navigator.of(context).push(MaterialPageRoute(
+                                  builder: (context) => editenote(
+                                        notes: snapshot.data['data'][i],
+                                      )));
+                            },
+                            title: "${snapshot.data['data'][i]['notes_title']}",
+                            content:
+                                "${snapshot.data['data'][i]['notes_content']}");
+                      });
+                }
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return Center(
+                    child: Text("loading . . ."),
+                  );
+                }
+                return Center(
+                  child: Text("loading . . ."),
+                );
+              },
+            )
+          ],
+        ),
+      ),
+    );
+  }
+}
